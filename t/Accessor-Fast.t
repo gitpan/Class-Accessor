@@ -51,7 +51,7 @@ BEGIN { $Total_tests = 20 }
 # Set up a testing package.
 package Foo;
 
-use base qw(Class::Accessor::Fast);
+@Foo::ISA = qw(Class::Accessor::Fast);
 Foo->mk_accessors(qw( foo bar yar car mar ));
 Foo->mk_ro_accessors(qw(static unchanged));
 Foo->mk_wo_accessors(qw(sekret double_sekret));
@@ -114,7 +114,7 @@ ok( @args == 2,                         'accessor get in list context'      );
 
 # Make sure a DESTROY field won't slip through.
 package Arrgh;
-use base qw(Foo);
+@Arrgh::ISA = qw(Foo);
 
 eval {
     local $SIG{__WARN__} = sub { die @_ };

@@ -51,7 +51,7 @@ BEGIN { $Total_tests = 22 }
 # Set up a testing package.
 package Foo;
 
-use base qw(Class::Accessor);
+@Foo::ISA = qw(Class::Accessor);
 Foo->mk_accessors(qw( foo bar yar car mar ));
 Foo->mk_ro_accessors(qw(static unchanged));
 Foo->mk_wo_accessors(qw(sekret double_sekret));
@@ -120,7 +120,7 @@ ok( $test->foo == 23,                                           'set()'     );
 
 # Make sure a DESTROY field won't slip through.
 package Arrgh;
-use base qw(Foo);
+@Arrgh::ISA = qw(Foo);
 
 eval {
     local $SIG{__WARN__} = sub { die @_ };

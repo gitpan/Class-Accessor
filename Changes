@@ -1,3 +1,6 @@
+0.17 Mon Apr  2 11:52:41 BST 2001
+    - Now requiring Class::Fields's base (because 5.005_03's is busted)
+
 0.16 Wed Dec 13 21:19:21 EST 2000
     * Added Class::Accessor::Fast
     * Added simple new() method

@@ -1,10 +1,10 @@
 package Class::Accessor::Fast;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = '0.01';
-
-use base qw(Class::Accessor);
+use vars qw($VERSION @ISA);
+$VERSION = '0.02';
+require Class::Accessor;
+@ISA = qw(Class::Accessor);
 
 
 =pod

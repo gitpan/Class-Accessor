@@ -30,8 +30,7 @@ CHANGE_WARN
 WriteMakefile(
     NAME                => $PACKAGE,
     VERSION_FROM        => 'lib/Class/Accessor.pm',
-    PREREQ_PM           => {
-                           },
+    PREREQ_PM           => { base       => 1.95 },
     'dist'              => { COMPRESS   => 'gzip -9',
                              SUFFIX     => '.gz',
                              DIST_DEFAULT   => 'all tardist',
