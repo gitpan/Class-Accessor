@@ -1,3 +1,8 @@
+0.18 Mon Apr  2 11:52:41 BST 2003
+    * First change in 2 years: Marty Pauley is new maintainer.
+    - changed the dependency for base to cope with the broken version shipped
+      with perl 5.6.0.
+
 0.17 Mon Apr  2 11:52:41 BST 2001
     - Now requiring Class::Fields's base (because 5.005_03's is busted)
 

@@ -11,7 +11,7 @@ use strict;
 # use Carp::Assert
 
 use vars qw($VERSION);
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 =pod
 
