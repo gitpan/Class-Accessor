@@ -1,3 +1,7 @@
+0.19 Tue Mar  2 23:10:48 GMT 2004
+    * Performance patch from Elizabeth Mattijsen
+    - minor layout and doc changes
+
 0.18 Mon Apr  2 11:52:41 BST 2003
     * First change in 2 years: Marty Pauley is new maintainer.
     - changed the dependency for base to cope with the broken version shipped
