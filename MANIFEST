@@ -1,0 +1,6 @@
+MANIFEST
+Makefile.PL
+lib/Class/Accessor.pm
+t/Accessor.t
+README
+INSTALL

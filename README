@@ -1,0 +1,113 @@
+=head1 NAME
+
+  Class::Fields::Accessor - Automated accessor generation
+
+
+=head1 SYNOPSIS
+
+  package Foo;
+
+  use base qw(Class::Fields::Accessor);
+  use public qw(this that whatever);
+
+  sub new { return bless {} }
+
+  # Meanwhile, in a nearby piece of code!
+  my $foo = Foo->new;
+
+  my $whatever = $foo->whatever;	# gets $foo->{whatever}
+  $foo->this('likmi');				# sets $foo->{this} = 'likmi'
+  
+  # Similar to @values = @{$foo}{qw(that whatever)}
+  @values = $foo->get(qw(that whatever));
+  
+  # sets $foo->{that} = 'crazy thing'
+  $foo->set('that', 'crazy thing');
+
+
+=head1 DESCRIPTION
+
+This module automagically generates accessors for all public fields of
+a subclass.
+
+Most of the time, writing accessors is an exercise in cutting and
+pasting.  You usually wind up with a series of methods like this:
+
+  # accessor for $obj->{foo}
+  sub foo {
+	  my($self) = shift;
+
+	  if(@_ == 1) {
+		  $self->{foo} = shift;
+	  }
+	  elsif(@_ > 1) {
+		  $self->{foo} = [@_];
+	  }
+
+	  return $self->{foo};
+  }
+		  
+
+  # accessor for $obj->{bar}
+  sub bar {
+	  my($self) = shift;
+
+	  if(@_ == 1) {
+		  $self->{bar} = shift;
+	  }
+	  elsif(@_ > 1) {
+		  $self->{bar} = [@_];
+	  }
+
+	  return $self->{bar};
+  }
+
+  # etc...
+
+One for each piece of data in your object.  While some will be unique,
+doing value checks and special storage tricks, most will simply be
+exercises in repetition.  Not only is it Bad Style to have a bunch of
+repetitious code, but its also simply not Lazy, which is the real
+tragedy.
+
+If you make your module a subclass of Class::Fields::Accessor and
+declare all your public data members using either the B<public> or
+B<fields> modules, then you'll find yourself with a set of
+automatically generated autoloaders which can even be customized!
+
+The basic set up is very simple:
+
+    package My::Class;
+    use base qw(Class::Fields::Accessor);
+    use public qw(foo bar car);
+
+Done.  My::Class now has simple foo(), bar() and car() accessors
+defined.
+
+The rest is details.
+
+=head1 AUTHOR
+
+Michael G Schwern <schwern@pobox.com>
+
+WHAT IS THIS?
+
+This is Class::Fields::Accessor, a perl module.  Please see the README that comes with
+this distribution.
+
+HOW DO I INSTALL IT?
+
+To install this module, cd to the directory that contains this README
+file and type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+To install this module into a specific directory, do:
+   perl Makefile.PL PREFIX=/name/of/the/directory
+   ...the rest is the same...
+
+Please also read the perlmodinstall man page, if available.
+
