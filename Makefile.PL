@@ -11,13 +11,11 @@ use ExtUtils::MakeMaker;
 
 $PACKAGE = 'Class::Accessor';
 ($PACKAGE_FILE) = $PACKAGE =~ /::([^:]+)/;
-$LAST_API_CHANGE = 0.02;
+$LAST_API_CHANGE = '0.10';
 
 require 5.00502;
 
-eval {
-    eval "require $PACKAGE";
-};
+eval "require $PACKAGE";
 
 unless ($@) { # Make sure we did find the module.
     print <<"CHANGE_WARN" if ${$PACKAGE.'::VERSION'} < $LAST_API_CHANGE;
@@ -30,16 +28,14 @@ CHANGE_WARN
 }
 
 WriteMakefile(
-	NAME               	=> $PACKAGE,
-	VERSION_FROM      	=> 'lib/Class/Accessor.pm',
-    PREREQ_PM          	=> {
-							Carp::Assert		=> 0.06,
-							Class::Fields		=> 0.05,
-							public				=> 0.01,
-							base				=> 1.90,
-						   },
-	'dist'      		=> { COMPRESS 	=> 'gzip -9',
-                             SUFFIX   	=> '.gz',
-                             DIST_DEFAULT 	=> 'all tardist',
+    NAME                => $PACKAGE,
+    VERSION_FROM        => 'lib/Class/Accessor.pm',
+    PREREQ_PM           => {
+                            Carp::Assert        => 0.06,
+                            base                => 1.90,
+                           },
+    'dist'              => { COMPRESS   => 'gzip -9',
+                             SUFFIX     => '.gz',
+                             DIST_DEFAULT   => 'all tardist',
                            },
 );

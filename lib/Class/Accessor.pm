@@ -1,3 +1,5 @@
+# $Id: Accessor.pm,v 1.6 2000/04/17 20:11:00 schwern Exp $
+
 package Class::Accessor;
 
 require 5.00502;
@@ -8,7 +10,7 @@ use Carp::Assert;
 use base qw(Class::Fields);
 
 use vars qw($VERSION);
-$VERSION = 0.02;
+$VERSION = '0.11';
 
 =pod
 
@@ -22,15 +24,15 @@ $VERSION = 0.02;
   package Foo;
 
   use base qw(Class::Accessor);
-  use public qw(this that whatever);
+  Foo->mk_accessors(qw(this that whatever));
 
   sub new { return bless {} }
 
   # Meanwhile, in a nearby piece of code!
   my $foo = Foo->new;
 
-  my $whatever = $foo->whatever;	# gets $foo->{whatever}
-  $foo->this('likmi');				# sets $foo->{this} = 'likmi'
+  my $whatever = $foo->whatever;    # gets $foo->{whatever}
+  $foo->this('likmi');              # sets $foo->{this} = 'likmi'
   
   # Similar to @values = @{$foo}{qw(that whatever)}
   @values = $foo->get(qw(that whatever));
@@ -41,39 +43,38 @@ $VERSION = 0.02;
 
 =head1 DESCRIPTION
 
-This module automagically generates accessors for all public fields of
-a subclass.
+This module automagically generates accessor/mutators for your class.
 
 Most of the time, writing accessors is an exercise in cutting and
 pasting.  You usually wind up with a series of methods like this:
 
   # accessor for $obj->{foo}
   sub foo {
-	  my($self) = shift;
+      my($self) = shift;
 
-	  if(@_ == 1) {
-		  $self->{foo} = shift;
-	  }
-	  elsif(@_ > 1) {
-		  $self->{foo} = [@_];
-	  }
+      if(@_ == 1) {
+          $self->{foo} = shift;
+      }
+      elsif(@_ > 1) {
+          $self->{foo} = [@_];
+      }
 
-	  return $self->{foo};
+      return $self->{foo};
   }
-		  
+          
 
   # accessor for $obj->{bar}
   sub bar {
-	  my($self) = shift;
+      my($self) = shift;
 
-	  if(@_ == 1) {
-		  $self->{bar} = shift;
-	  }
-	  elsif(@_ > 1) {
-		  $self->{bar} = [@_];
-	  }
+      if(@_ == 1) {
+          $self->{bar} = shift;
+      }
+      elsif(@_ > 1) {
+          $self->{bar} = [@_];
+      }
 
-	  return $self->{bar};
+      return $self->{bar};
   }
 
   # etc...
@@ -84,19 +85,67 @@ exercises in repetition.  Not only is it Bad Style to have a bunch of
 repetitious code, but its also simply not Lazy, which is the real
 tragedy.
 
-If you make your module a subclass of Class::Accessor and
-declare all your public data members using either the B<public> or
-B<fields> modules, then you'll find yourself with a set of
-automatically generated autoloaders which can even be customized!
+If you make your module a subclass of Class::Accessor and declare your
+accessor fields with mk_accessors() then you'll find yourself with a
+set of automatically generated accessors which can even be
+customized!
 
 The basic set up is very simple:
 
     package My::Class;
     use base qw(Class::Accessor);
-    use public qw(foo bar car);
+    My::Class->mk_accessors( qw(foo bar car) );
 
 Done.  My::Class now has simple foo(), bar() and car() accessors
 defined.
+
+=over 4
+
+=item B<mk_accessors>
+
+    Class->mk_accessors(@fields);
+
+This creates accessor/mutator methods for each named field given in
+@fields.  Foreach field in @fields it will generate two accessors.
+One called "field()" and the other called "_field_accessor()".  For
+example:
+
+    # Generates foo(), _foo_accessor(), bar() and _bar_accessor().
+    Class->mk_accessors(qw(foo bar));
+
+=cut
+
+#'#
+{
+    no strict 'refs';
+
+    sub mk_accessors {
+        my($self, @fields) = @_;
+        
+        my $class = ref $self || $self;
+        
+        foreach my $field (@fields) {
+            if( $field eq 'DESTROY' ) {
+                require Carp;
+                &Carp::carp("Having a data accessor named DESTROY  in ".
+                             "'$class' is unwise.");
+            }
+
+            my $accessor = $self->make_accessor($field);
+            my $alias = "_${field}_accessor";
+            
+            *{$class."\:\:$field"}  = $accessor
+              unless defined &{$class."\:\:$field"};
+            
+            *{$class."\:\:$alias"}  = $accessor
+              unless defined &{$class."\:\:$alias"};
+        }
+    }
+}
+        
+=pod
+
+=back
 
 The rest is details.
 
@@ -107,71 +156,19 @@ this:
 
     # Your foo may vary.
     sub foo {
-		my($self) = shift;
-		if(@_) {	# set
-			return $self->set('foo', @_);
-		}
-		else {
-			return $self->get('foo', @_);
-		}
-	}
+        my($self) = shift;
+        if(@_) {    # set
+            return $self->set('foo', @_);
+        }
+        else {
+            return $self->get('foo');
+        }
+    }
 
 Very simple.  All it does is determine if you're wanting to set a
 value or get a value and calls the appropriate method.
 Class::Accessor provides default get() and set() methods which
 your class can override.  They're detailed later.
-
-=head2 The accessor autoloader
-
-Class::Accessor employs an autoloader to get its job done.
-Just set the record straight there is -no- performance penalty from
-the autoloader after the first accessor method call.  Only the first
-call to each accessor hits the autoloader where it is defined as a
-perfectly normal static method (actually, its a closure.)
-
-=cut
-
-use vars qw($AUTOLOAD);
-
-sub AUTOLOAD {
-	my $self = $_[0];
-
-	my $class = ref $self || $self;
-
-	my($field) = $AUTOLOAD =~ /::([^:]+)$/;
-	
-	$field =~ s/^_(.*)_accessor$/$1/;
-	my $alias = "_${field}_accessor";
-
-	# Is it a public data member?
-	unless( $self->is_public($field) ) {
-		require Carp;
-		&Carp::croak("'$field' is not a public data member of '$class'".
-					 "for autoloading");
-	}
-
-	# Having a public field called DESTROY isn't smart.
-	if( $field eq 'DESTROY' ) {
-		require Carp;
-		&Carp::croak("Having a public data field named DESTROY in '$class' ".
-					 "which inherits from ".__PACKAGE__." is unwise.");
-	}
-
-	# Set up the accessor as a static method in the calling class.
-	$self->make_static_accessors($field);
-	my $accessor = $self->can($field) || $self->can($alias);
-
-	# Make sure we got an accessor.
-	assert( defined $accessor and ref $accessor eq 'CODE' ) if DEBUG;
-
-	goto &$accessor;
-
-	# We should never be here.
-	assert(0);
-}
-		
-
-=pod
 
 =head2 Modifying the behavior of the accessor
 
@@ -193,17 +190,17 @@ set() defines how generally one stores data in the object.
 =cut
 
 sub set {
-	my($self, $key) = splice(@_, 0, 2);
+    my($self, $key) = splice(@_, 0, 2);
 
-	if(@_ == 1) {
-		$self->{$key} = $_[0];
-	}
-	elsif(@_ > 1) {
-		$self->{$key} = [@_];
-	}
-	else {
-		assert(0) if DEBUG;
-	}
+    if(@_ == 1) {
+        $self->{$key} = $_[0];
+    }
+    elsif(@_ > 1) {
+        $self->{$key} = [@_];
+    }
+    else {
+        assert(0) if DEBUG;
+    }
 }
 
 
@@ -211,23 +208,23 @@ sub set {
 
 =item B<get>
 
-    $value 	= $obj->get($key);
+    $value  = $obj->get($key);
     @values = $obj->get(@keys);
 
 =cut
 
 sub get {
-	my($self) = shift;
+    my($self) = shift;
 
-	if(@_ == 1) {
-		return $self->{$_[0]};
-	}
-	elsif( @_ > 1 ) {
-		return @{$self}{@_};
-	}
-	else {
-		assert(0) if DEBUG;
-	}
+    if(@_ == 1) {
+        return $self->{$_[0]};
+    }
+    elsif( @_ > 1 ) {
+        return @{$self}{@_};
+    }
+    else {
+        assert(0) if DEBUG;
+    }
 }
 
 =item B<make_accessor>
@@ -240,63 +237,19 @@ $field.
 =cut
 
 sub make_accessor {
-    my($self, $field) = @_;
+    my($class, $field) = @_;
 
-	# Build a closure around $field.
-	return sub {
-		my($self) = shift;
+    # Build a closure around $field.
+    return sub {
+        my($self) = shift;
 
-		if(@_) {
-			return $self->set($field, @_);
-		}
-		else {
-			return $self->get($field);
-		}
-	};
-}
-
-=pod
-
-=item B<make_static_accessors>
-
-    Class->make_static_accessors;
-    Class->make_static_accessors(@fields);
-
-This will bypass the autoloader and immediately generate accessors.
-Useful for certain situations.  L<CAVEATS AND TRICKS>.
-
-If called with no arguments it will generate accessors for every
-public field in the Class.  Otherwise it will just create accessors
-for those @fields given (irregardless of their status as fields!)
-
-Foreach field in @fields it will generate two accessors.  One called
-"field()" and the other called "_field_accessor()".  For example:
-
-    # Generates foo(), _foo_accessor(), bar() and _bar_accessor().
-    Class->make_static_accessors(qw(foo bar));
-
-=cut
-
-{
-	no strict 'refs';
-
-	sub make_static_accessors {
-		my($self, @fields) = @_;
-		
-		@fields = $self->show_fields('Public') unless @fields;
-		my $class = ref $self || $self;
-		
-		foreach my $field (@fields) {
-			my $accessor = $self->make_accessor($field);
-			my $alias = "_${field}_accessor";
-			
-			*{$class."\:\:$field"}	= $accessor
-			  unless defined &{$class."\:\:$field"};
-			
-			*{$class."\:\:$alias"} 	= $accessor
-			  unless defined &{$class."\:\:$alias"};
-		}
-	}
+        if(@_) {
+            return $self->set($field, @_);
+        }
+        else {
+            return $self->get($field);
+        }
+    };
 }
 
 =pod
@@ -311,25 +264,11 @@ tricks and traps one must know about.
 
 Hey, nothing's perfect.
 
-=head2 Don't make a public field called DESTROY
+=head2 Don't make a field called DESTROY
 
 This is bad.  Since DESTROY is a magical method it would be bad for us
 to define an accessor using that name.  Class::Accessor will
-choke if you try to use it with a public field named "DESTROY".
-
-=head2 can() cannot
-
-Normally, one would expect $obj->can('foo') to see if $obj has a
-method called 'foo' defined.  Unfortunately can() doesn't work well
-when autoloaders are involved, and Class::Accessor involves an
-autoloader.  For efficiency's sake, Class::Accessor does not
-actually define the accessor method until it is first called.  After
-that call the method is defined can can() will work.  Before that,
-however, can() will not see an autogenerated accessor.
-
-The simplest way around this is to call make_static_accessors().  As
-detailed before, this will force the generation of your accessors and
-allow can() to work normally.
+carp if you try to use it with a field named "DESTROY".
 
 =head2 Overriding autogenerated accessors
 
@@ -337,86 +276,43 @@ You may want to override the autogenerated accessor with your own, yet
 have your custom accessor call the default one.  Normally, one would
 expect this to work:
 
-	package My::Class;
-	use base qw(Class::Accessor);
-	use public qw(foo);
+    package My::Class;
+    use base qw(Class::Accessor);
+    My::Class->mk_accessors('foo');
 
-	sub foo {
-		my($self) = shift;
-		
-		## Do some special work ##
+    sub foo {
+        my($self) = shift;
+        
+        ## Do some special work ##
 
-		# XXX THIS WILL NOT WORK.  There is no SUPER::foo().
-		return $self->SUPER::foo(@_);
-	}
+        # XXX THIS WILL NOT WORK.  There is no SUPER::foo().
+        return $self->SUPER::foo(@_);
+    }
 
-Unforunately, it doesn't.  Class::Accessor employs an
-autoloader to inject methods directly into its subclass.  This means
-there -is- no SUPER::foo().  As a simple hack around this, in addition
-to defining foo(), Class::Accessor will also define an alias
-as _foo_accessor().  
+Unforunately, it doesn't.  Class::Accessor injects methods directly
+into its subclass.  This means there -is- no SUPER::foo().  As a
+simple hack around this, in addition to defining foo(),
+Class::Accessor will also define an alias as _foo_accessor().
 
 So the correct way to override an autogenerated accessor is to use
 _foo_accessor().
 
-	package My::Class;
-	use base qw(Class::Accessor);
-	use public qw(foo);
+    package My::Class;
+    use base qw(Class::Accessor);
+    My::Class->mk_accessors('foo');
 
-	sub foo {
-		my($self) = shift;
-		
-		## Do some special work ##
+    sub foo {
+        my($self) = shift;
+        
+        ## Do some special work ##
 
-		# The correct way.
-		return $self->_foo_accessor(@_);
-	}
-
-=head2 Providing your own autoloader.
-
-Since Class::Accessor employs an autoloader which must be
-called, it would wreck some havok if your class defined its own
-autoloader.  There's two simple ways around this.
-
-First, you can simply bypass Class::Accessor's autoloader and
-have all your accessors generated at compile time:
-
-	package My::Class;
-	use base qw(Class::Accessor);
-	use public qw(foo bar yar car);
-
-	# All your accessors are now defined, 
-	# Class::Accessor::AUTOLOAD() no longer enters the 
-	# picture.
-	My::Class->make_static_accessors;
-
-	sub AUTOLOAD {
-		# whatever...
-	}
-
-Or, you can have your autoloader call Class::Accessor::AUTOLOAD().
-	  
-	sub AUTOLOAD {
-		my($self) = $_[0];
-
-		#
-		# Do that autoloading thing.
-		#
-
-		# If all else fails, let Class::Accessor take a wack.
-		goto &Class::Accessor::AUTOLOAD;
+        # The correct way.
+        return $self->_foo_accessor(@_);
     }
-
-You must, of course, be careful not to modify @_ or $AUTOLOAD.
-
 
 =head1 AUTHOR
 
 Michael G Schwern <schwern@pobox.com>
-
-=head1 SEE ALSO
-
-L<public>, L<fields>
 
 =cut
 
