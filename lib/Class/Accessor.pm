@@ -1,4 +1,4 @@
-# $Id: Accessor.pm,v 1.7 2000/04/18 17:24:16 schwern Exp $
+# $Id: Accessor.pm,v 1.8 2000/04/25 00:56:51 schwern Exp $
 
 package Class::Accessor;
 
@@ -9,7 +9,7 @@ use strict;
 use Carp::Assert;
 
 use vars qw($VERSION);
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 =pod
 

@@ -52,15 +52,12 @@ BEGIN { $Total_tests = 10 }
 package Foo;
 
 use base qw(Class::Accessor);
-use protected qw(foo bar yar car mar);
 Foo->mk_accessors(qw( foo bar yar car mar ));
-use private qw( _har _Changed );
-
 
 sub new {
     my $class = shift;
     no strict 'refs';
-    return bless [\%{"$class\:\:FIELDS"}], $class;
+    return bless {}, $class;
 }
 
 sub car {
