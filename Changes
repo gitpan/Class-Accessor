@@ -1,0 +1,40 @@
+0.16 Wed Dec 13 21:19:21 EST 2000
+    * Added Class::Accessor::Fast
+    * Added simple new() method
+    - Added EFFICIENCY, SEE ALSO and THANKS doc sections
+    - Added docs about why this module is interesting
+    * Added read-only and write-only accessors (thanks Tels)
+    - Fixed the Altoids example (thanks again, Tels)
+    - Added a simple example of overiding accessors
+
+0.15  Thu Aug 17 20:39:02 EDT 2000
+    - Removed use of Carp::Assert to speed loading time
+    - Added an EXAMPLE section.
+
+0.14  Sun Jul  2 20:05:51 EDT 2000
+    - Rolled the accessor overriding caveats from the TPC paper into
+      the docs.
+
+0.13  Mon Apr 24 20:33:40 EDT 2000
+    - Left a dependency on Class::Fields in the tests.
+
+0.12  Tue Apr 18 13:22:17 EDT 2000
+    - Left a dependency on Class::Fields in Accessor.pm
+    - Removed PREREQ_PM on base.pm
+
+0.11  Mon Apr 17 20:11:00 EDT 2000
+    - Removed a few "use public"s from the docs.
+
+0.10  Fri Apr 14 23:29:01 EDT 2000
+    * Removed the Autoloader.
+    * Instead of wraping public data accessors around public data (how silly)
+      Class::Accessor now simply generates the accessors you request.
+    * Added mk_accessors()
+    - Removed the docs about the accessor autoloader.
+    - Removed the autoloading caveat.
+    * Removed make_static_accessors()
+    - It will now only warn if you try to make an accessor called DESTROY()
+    - detabbed everything
+
+0.02  Sun Dec 12 02:22:12 EST 1999
+    * Class::Fields::Accessor is now Class::Accessor

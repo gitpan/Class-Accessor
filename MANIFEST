@@ -1,6 +1,10 @@
+Changes
+INSTALL
 MANIFEST
 Makefile.PL
-lib/Class/Accessor.pm
-t/Accessor.t
 README
-INSTALL
+examples/benchmark
+lib/Class/Accessor.pm
+lib/Class/Accessor/Fast.pm
+t/Accessor-Fast.t
+t/Accessor.t

@@ -14,7 +14,7 @@ my $test_num;
 BEGIN { $| = 1; $^W = 1; $test_num=1}
 END {print "not ok $test_num\n" unless $loaded;}
 print "1..$Total_tests\n";
-use Class::Accessor;
+use Class::Accessor::Fast;
 $loaded = 1;
 ok(1,                                                           'compile()' );
 ######################### End of black magic.
@@ -45,16 +45,17 @@ sub eqarray  {
 }
 
 # Change this to your # of ok() calls + 1
-BEGIN { $Total_tests = 22 }
+BEGIN { $Total_tests = 20 }
 
 
 # Set up a testing package.
 package Foo;
 
-use base qw(Class::Accessor);
+use base qw(Class::Accessor::Fast);
 Foo->mk_accessors(qw( foo bar yar car mar ));
 Foo->mk_ro_accessors(qw(static unchanged));
 Foo->mk_wo_accessors(qw(sekret double_sekret));
+
 
 sub car {
     shift->_car_accessor(@_);
@@ -103,19 +104,12 @@ eval { $test->gargle() };
 ok( $@,                                                 'bad accessor()'    );
 
 
-# Test get()
-my @vals = $test->get(qw(foo bar));
-ok( eqarray(\@vals, [qw(42 Meep)]),                             'get()'     );
 
 # Test that the accessor works properly in list context with a single arg.
 my Foo $test2 = Foo->new;
 my @args = ($test2->foo, $test2->bar);
 ok( @args == 2,                         'accessor get in list context'      );
 
-
-# Test set()
-$test->set('foo', 23);
-ok( $test->foo == 23,                                           'set()'     );
 
 
 # Make sure a DESTROY field won't slip through.
@@ -138,7 +132,7 @@ eval {
 
 package Altoids;
 
-use base qw(Class::Accessor);
+use base qw(Class::Accessor::Fast);
 use fields qw(curiously strong mints);
 Altoids->mk_accessors(keys %Altoids::FIELDS);
 

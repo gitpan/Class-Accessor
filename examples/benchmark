@@ -1,0 +1,78 @@
+#!/usr/bin/perl -w
+
+package Bench::Base;
+
+sub new { 
+    my($class) = shift;
+    bless { test => 23 }, $class;
+}
+
+
+package Bench::Class::Accessor;
+use base qw(Bench::Base Class::Accessor);
+__PACKAGE__->mk_accessors(qw(test));
+
+
+package Bench::Class::Accessor::Fast;
+use base qw(Bench::Base Class::Accessor::Fast);
+__PACKAGE__->mk_accessors(qw(test));
+
+package Bench::Direct;
+use base qw(Bench::Base);
+
+package Bench::ByHand;
+use base qw(Bench::Base);
+
+sub test {
+    my($self) = shift;
+    if( @_ ) {
+        $self->{test} = (@_ == 1 ? $_[0] : [@_]);
+    }
+    return $self->{test};
+}
+
+
+my $ca     = Bench::Class::Accessor->new;
+my $fast   = Bench::Class::Accessor::Fast->new;
+my $direct = Bench::Direct->new;
+my $byhand = Bench::ByHand->new;
+
+my $foo;
+my $control = 42;
+
+
+package main;
+use Benchmark;
+use strict;
+
+timethese( shift || -3, 
+           {
+            'C::A - get' => sub {
+                $foo = $ca->test;
+            },
+            'C::A - set' => sub {
+                $ca->test(42);
+            },
+
+            'C::A::Fast - get' => sub {
+                $foo = $fast->test;
+            },
+            'C::A::Fast - set' => sub {
+                $fast->test(42);
+            },
+
+            'By Hand - get' => sub {
+                $foo = $byhand->test;
+            },
+            'By Hand - set' => sub {
+                $byhand->test(42);
+            },
+
+            'Direct - get' => sub {
+                $foo = $direct->{test};
+            },
+            'Direct - set' => sub {
+                $direct->{test} = 42;
+            }
+           }
+         );
