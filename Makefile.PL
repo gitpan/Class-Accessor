@@ -31,7 +31,6 @@ WriteMakefile(
     NAME                => $PACKAGE,
     VERSION_FROM        => 'lib/Class/Accessor.pm',
     PREREQ_PM           => {
-                            Carp::Assert        => 0.06,
                            },
     'dist'              => { COMPRESS   => 'gzip -9',
                              SUFFIX     => '.gz',

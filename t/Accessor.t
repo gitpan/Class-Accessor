@@ -45,7 +45,7 @@ sub eqarray  {
 }
 
 # Change this to your # of ok() calls + 1
-BEGIN { $Total_tests = 10 }
+BEGIN { $Total_tests = 18 }
 
 
 # Set up a testing package.
@@ -121,3 +121,39 @@ eval {
 # Override &Arrgh::DESTROY to shut up the warning we intentionally created
 #*Arrgh::DESTROY = sub {};
 #() = *Arrgh::DESTROY;  # shut up typo warning.
+
+
+
+package Altoids;
+
+use base qw(Class::Accessor);
+use fields qw(curiously strong mints);
+Altoids->mk_accessors(keys %Altoids::FIELDS);
+
+::ok(defined &Altoids::curiously);
+::ok(defined &Altoids::strong);
+::ok(defined &Altoids::mints);
+
+sub new {
+    my $proto = shift;
+    my $class = ref $proto || $proto;
+    return fields::new($class);
+}
+
+my Altoids $tin = Altoids->new;
+
+$tin->curiously('Curiouser and curiouser');
+::ok($tin->{curiously} eq 'Curiouser and curiouser');
+
+
+# Subclassing works, too.
+package Mint::Snuff;
+use base qw(Altoids);
+
+::ok(defined &Altoids::curiously);
+::ok(defined &Altoids::strong);
+::ok(defined &Altoids::mints);
+
+my Mint::Snuff $pouch = Mint::Snuff->new;
+$pouch->strong('Fuck you up strong!');
+::ok($pouch->{strong} eq 'Fuck you up strong!');
