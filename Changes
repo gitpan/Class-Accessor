@@ -1,3 +1,7 @@
+0.21 Thu Sep  1 16:58:31 BST 2005
+    - added _croak and _carp methods so you can override these in subclasses if
+      you want to change the default behaviour when something bad happens.
+
 0.20 Thu Sep  1 12:25:23 BST 2005
     - add a copyright statement
     - tidy some documentation (more to do later)

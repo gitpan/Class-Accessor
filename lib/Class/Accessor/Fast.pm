@@ -35,8 +35,8 @@ sub make_accessor {
     my($class, $field) = @_;
 
     return sub {
+        return $_[0]->{$field} unless @_ > 1;
         my $self = shift;
-        return $self->{$field} unless @_;
         $self->{$field} = (@_ == 1 ? $_[0] : [@_]);
     };
 }
@@ -47,10 +47,9 @@ sub make_ro_accessor {
 
     return sub {
         return $_[0]->{$field} unless @_ > 1;
+        my $self = shift;
         my $caller = caller;
-        require Carp;
-        Carp::croak("'$caller' cannot alter the value of '$field' on ".
-                    "objects of class '$class'");
+        $self->_croak("'$caller' cannot alter the value of '$field' on objects of class '$class'");
     };
 }
 
@@ -63,9 +62,7 @@ sub make_wo_accessor {
 
         unless (@_) {
             my $caller = caller;
-            require Carp;
-            Carp::croak("'$caller' cannot access the value of '$field' on ".
-                        "objects of class '$class'");
+            $self->_croak("'$caller' cannot access the value of '$field' on objects of class '$class'");
         }
         else {
             return $self->{$field} = (@_ == 1 ? $_[0] : [@_]);

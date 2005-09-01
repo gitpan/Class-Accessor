@@ -1,7 +1,7 @@
 package Class::Accessor;
 require 5.00502;
 use strict;
-$Class::Accessor::VERSION = '0.20';
+$Class::Accessor::VERSION = '0.21';
 
 =head1 NAME
 
@@ -158,19 +158,13 @@ sub mk_accessors {
 
         foreach my $field (@fields) {
             if( $field eq 'DESTROY' ) {
-                require Carp;
-                &Carp::carp("Having a data accessor named DESTROY  in ".
-                             "'$class' is unwise.");
+                $self->carp("Having a data accessor named DESTROY  in '$class' is unwise.");
             }
 
             my $accessor = $self->$maker($field);
             my $alias = "_${field}_accessor";
-
-            *{$class."\:\:$field"}  = $accessor
-              unless defined &{$class."\:\:$field"};
-
-            *{$class."\:\:$alias"}  = $accessor
-              unless defined &{$class."\:\:$alias"};
+            *{"${class}::$field"}  = $accessor unless defined &{"${class}::$field"};
+            *{"${class}::$alias"}  = $accessor unless defined &{"${class}::$alias"};
         }
     }
 }
@@ -279,8 +273,7 @@ sub set {
         $self->{$key} = [@_];
     }
     else {
-        require Carp;
-        &Carp::confess("Wrong number of arguments received");
+        $self->_croak("Wrong number of arguments received");
     }
 }
 
@@ -305,8 +298,7 @@ sub get {
         return @{$self}{@_};
     }
     else {
-        require Carp;
-        &Carp::confess("Wrong number of arguments received.");
+        $self->_croak("Wrong number of arguments received");
     }
 }
 
@@ -355,11 +347,9 @@ sub make_ro_accessor {
     return sub {
         my $self = shift;
 
-        if(@_) {
+        if (@_) {
             my $caller = caller;
-            require Carp;
-            Carp::croak("'$caller' cannot alter the value of '$field' on ".
-                        "objects of class '$class'");
+            $self->_croak("'$caller' cannot alter the value of '$field' on objects of class '$class'");
         }
         else {
             return $self->get($field);
@@ -386,14 +376,34 @@ sub make_wo_accessor {
 
         unless (@_) {
             my $caller = caller;
-            require Carp;
-            Carp::croak("'$caller' cannot access the value of '$field' on ".
-                        "objects of class '$class'");
+            $self->_croak("'$caller' cannot access the value of '$field' on objects of class '$class'");
         }
         else {
             return $self->set($field, @_);
         }
     };
+}
+
+=head1 EXCEPTIONS
+
+If something goes wrong Class::Accessor will warn or die by calling Carp::carp
+or Carp::croak.  If you don't like this you can override _carp() and _croak() in
+your subclass and do whatever else you want.
+
+=cut
+
+use Carp ();
+
+sub _carp {
+    my ($self, $msg) = @_;
+    Carp::carp($msg || $self);
+    return;
+}
+
+sub _croak {
+    my ($self, $msg) = @_;
+    Carp::croak($msg || $self);
+    return;
 }
 
 =head1 EFFICIENCY
