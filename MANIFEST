@@ -1,11 +1,11 @@
+MANIFEST
+META.yml
+README
 Changes
 INSTALL
-MANIFEST
 Makefile.PL
-README
-examples/benchmark
 lib/Class/Accessor.pm
 lib/Class/Accessor/Fast.pm
-t/Accessor-Fast.t
 t/Accessor.t
-META.yml                                 Module meta-data (added by MakeMaker)
+t/Accessor-Fast.t
+examples/benchmark

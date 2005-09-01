@@ -1,3 +1,7 @@
+0.20 Thu Sep  1 12:25:23 BST 2005
+    - add a copyright statement
+    - tidy some documentation (more to do later)
+
 0.19 Tue Mar  2 23:10:48 GMT 2004
     * Performance patch from Elizabeth Mattijsen
     - minor layout and doc changes
