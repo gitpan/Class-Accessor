@@ -1,7 +1,7 @@
 package Class::Accessor;
 require 5.00502;
 use strict;
-$Class::Accessor::VERSION = '0.21';
+$Class::Accessor::VERSION = '0.22';
 
 =head1 NAME
 
