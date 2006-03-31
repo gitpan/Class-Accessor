@@ -6,6 +6,7 @@ INSTALL
 Makefile.PL
 lib/Class/Accessor.pm
 lib/Class/Accessor/Fast.pm
-t/Accessor.t
-t/Accessor-Fast.t
+t/accessors.t
+t/croak.t
+t/getset.t
 examples/benchmark

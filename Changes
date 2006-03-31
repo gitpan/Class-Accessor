@@ -1,3 +1,13 @@
+0.25 Fri Mar 31 18:28:17 JST 2006
+    - added a 'follow_best_practice' class method that causes the accessors to
+      be called 'get_foo' and 'set_foo' instead of just 'foo'
+    - added 'accessor_name_for' and 'mutator_name_for' methods that you can
+      override in your subclass to create your own names for accessors.
+      (That idea taken from Class::DBI.)
+
+0.23 Sat Feb 25 19:46:08 GMT 2006
+    - rewrote the tests.  Now using Test::More
+
 0.21 Thu Sep  1 16:58:31 BST 2005
     - added _croak and _carp methods so you can override these in subclasses if
       you want to change the default behaviour when something bad happens.

@@ -1,7 +1,7 @@
 package Class::Accessor;
 require 5.00502;
 use strict;
-$Class::Accessor::VERSION = '0.22';
+$Class::Accessor::VERSION = '0.25';
 
 =head1 NAME
 
@@ -142,7 +142,7 @@ for details.
 sub mk_accessors {
     my($self, @fields) = @_;
 
-    $self->_mk_accessors('make_accessor', @fields);
+    $self->_mk_accessors('rw', @fields);
 }
 
 
@@ -150,23 +150,52 @@ sub mk_accessors {
     no strict 'refs';
 
     sub _mk_accessors {
-        my($self, $maker, @fields) = @_;
+        my($self, $access, @fields) = @_;
         my $class = ref $self || $self;
-
-        # So we don't have to do lots of lookups inside the loop.
-        $maker = $self->can($maker) unless ref $maker;
+        my $ra = $access eq 'rw' || $access eq 'ro';
+        my $wa = $access eq 'rw' || $access eq 'wo';
 
         foreach my $field (@fields) {
-            if( $field eq 'DESTROY' ) {
-                $self->carp("Having a data accessor named DESTROY  in '$class' is unwise.");
+            my $accessor_name = $self->accessor_name_for($field);
+            my $mutator_name = $self->mutator_name_for($field);
+            if( $accessor_name eq 'DESTROY' or $mutator_name eq 'DESTROY' ) {
+                $self->_carp("Having a data accessor named DESTROY  in '$class' is unwise.");
             }
-
-            my $accessor = $self->$maker($field);
-            my $alias = "_${field}_accessor";
-            *{"${class}::$field"}  = $accessor unless defined &{"${class}::$field"};
-            *{"${class}::$alias"}  = $accessor unless defined &{"${class}::$alias"};
+            if ($accessor_name eq $mutator_name) {
+                my $accessor;
+                if ($ra && $wa) {
+                    $accessor = $self->make_accessor($field);
+                } elsif ($ra) {
+                    $accessor = $self->make_ro_accessor($field);
+                } else {
+                    $accessor = $self->make_wo_accessor($field);
+                }
+                unless (defined &{"${class}::$accessor_name"}) {
+                    *{"${class}::$accessor_name"} = $accessor;
+                }
+                if ($accessor_name eq $field) {
+                    # the old behaviour
+                    my $alias = "_${field}_accessor";
+                    *{"${class}::$alias"} = $accessor unless defined &{"${class}::$alias"};
+                }
+            } else {
+                if ($ra and not defined &{"${class}::$accessor_name"}) {
+                    *{"${class}::$accessor_name"} = $self->make_ro_accessor($field);
+                }
+                if ($wa and not defined &{"${class}::$mutator_name"}) {
+                    *{"${class}::$mutator_name"} = $self->make_wo_accessor($field);
+                }
+            }
         }
     }
+
+    sub follow_best_practice {
+        my($self) = @_;
+        my $class = ref $self || $self;
+        *{"${class}::accessor_name_for"}  = \&best_practice_accessor_name_for;
+        *{"${class}::mutator_name_for"}  = \&best_practice_mutator_name_for;
+    }
+
 }
 
 =head2 mk_ro_accessors
@@ -192,7 +221,7 @@ set().
 sub mk_ro_accessors {
     my($self, @fields) = @_;
 
-    $self->_mk_accessors('make_ro_accessor', @fields);
+    $self->_mk_accessors('ro', @fields);
 }
 
 =head2 mk_wo_accessors
@@ -220,7 +249,7 @@ for orthoginality and because its easy to implement.
 sub mk_wo_accessors {
     my($self, @fields) = @_;
 
-    $self->_mk_accessors('make_wo_accessor', @fields);
+    $self->_mk_accessors('wo', @fields);
 }
 
 =head1 DETAILS
@@ -243,6 +272,42 @@ Very simple.  All it does is determine if you're wanting to set a
 value or get a value and calls the appropriate method.
 Class::Accessor provides default get() and set() methods which
 your class can override.  They're detailed later.
+
+=head2 follow_best_practice
+
+In Damian's Perl Best Practices book he recommends separate get and set methods
+with the prefix set_ and get_ to make it explicit what you intend to do.  If you
+want to create those accessor methods instead of the default ones, call:
+
+    __PACKAGE__->follow_best_practice
+
+=head2 accessor_name_for / mutator_name_for
+
+You may have your own crazy ideas for the names of the accessors, so you can
+make those happen by overriding C<accessor_name_for> and C<mutator_name_for> in
+your subclass.  (I copied that idea from Class::DBI.)
+
+=cut
+
+sub best_practice_accessor_name_for {
+    my ($class, $field) = @_;
+    return "get_$field";
+}
+
+sub best_practice_mutator_name_for {
+    my ($class, $field) = @_;
+    return "set_$field";
+}
+
+sub accessor_name_for {
+    my ($class, $field) = @_;
+    return $field;
+}
+
+sub mutator_name_for {
+    my ($class, $field) = @_;
+    return $field;
+}
 
 =head2 Modifying the behavior of the accessor
 
