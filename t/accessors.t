@@ -1,8 +1,8 @@
 #!perl
 use strict;
-use Test::More tests => 26;
+use Test::More tests => 37;
 
-for my $class (qw(Class::Accessor Class::Accessor::Fast)) {
+for my $class (qw(Class::Accessor Class::Accessor::Fast Class::Accessor::Faster)) {
     require_ok($class);
     my $silly = "Silly::$class";
     {
@@ -24,7 +24,7 @@ for my $class (qw(Class::Accessor Class::Accessor::Fast)) {
     $test->bar('Meep');
 
     is($test->foo, 42, "foo accessor");
-    is($test->{foo}, 42, "foo hash element");
+    is($test->{foo}, 42, "foo hash element") unless $class eq 'Class::Accessor::Faster';
 
     is($test->static, 'variable', 'ro accessor');
     eval { $test->static('foo'); };
@@ -33,7 +33,7 @@ for my $class (qw(Class::Accessor Class::Accessor::Fast)) {
         'ro accessor write protection');
 
     $test->double_sekret(1001001);
-    is( $test->{double_sekret}, 1001001, 'wo accessor');
+    is( $test->{double_sekret}, 1001001, 'wo accessor') unless $class eq 'Class::Accessor::Faster';
     eval { () = $test->double_sekret; };
     like(scalar $@,
         qr/^'main' cannot access the value of 'double_sekret' on objects of class '$silly'/,

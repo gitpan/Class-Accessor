@@ -1,7 +1,10 @@
-NAME
-      Class::Accessor - Automated accessor generation
+NAMES
+      Class::Accessor         - automated accessor generation
+      Class::Accessor::Fast   - faster automated accessor generation
+      Class::Accessor::Faster - even faster, using an array
 
 DESCRIPTION
+
     This module automagically generates accessors/mutators for your class.
 
     Most of the time, writing accessors is an exercise in cutting and
@@ -46,12 +49,13 @@ DESCRIPTION
 
 AUTHORS
 
-    Copyright 2005 Marty Pauley <marty+perl@kasei.com>
+    Copyright 2006 Marty Pauley <marty+perl@kasei.com>
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself. That means either (a) the GNU
     General Public License or (b) the Artistic License.
 
-  ORIGINAL AUTHOR
+ORIGINAL AUTHOR
+
     Michael G Schwern <schwern@pobox.com>
 

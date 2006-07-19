@@ -7,16 +7,6 @@ sub new {
     bless { test => 23 }, $class;
 }
 
-
-package Bench::Class::Accessor;
-use base qw(Bench::Base Class::Accessor);
-__PACKAGE__->mk_accessors(qw(test));
-
-
-package Bench::Class::Accessor::Fast;
-use base qw(Bench::Base Class::Accessor::Fast);
-__PACKAGE__->mk_accessors(qw(test));
-
 package Bench::Direct;
 use base qw(Bench::Base);
 
@@ -31,9 +21,23 @@ sub test {
     return $self->{test};
 }
 
+package Bench::Class::Accessor;
+use base qw(Class::Accessor);
+__PACKAGE__->mk_accessors(qw(test));
 
-my $ca     = Bench::Class::Accessor->new;
-my $fast   = Bench::Class::Accessor::Fast->new;
+
+package Bench::Class::Accessor::Fast;
+use base qw(Class::Accessor::Fast);
+__PACKAGE__->mk_accessors(qw(test));
+
+package Bench::Class::Accessor::Faster;
+use base qw(Class::Accessor::Faster);
+__PACKAGE__->mk_accessors(qw(test));
+
+my %init   = ( test => 23 );
+my $ca     = Bench::Class::Accessor->new(\%init);
+my $fast   = Bench::Class::Accessor::Fast->new(\%init);
+my $faster = Bench::Class::Accessor::Faster->new(\%init);
 my $direct = Bench::Direct->new;
 my $byhand = Bench::ByHand->new;
 
@@ -49,6 +53,7 @@ cmpthese( -1,
            {
             'C::A - get' => sub { $foo = $ca->test; },
             'C::A::F - get' => sub { $foo = $fast->test; },
+            'C::A::Fr - get' => sub { $foo = $faster->test; },
             'By Hand - get' => sub { $foo = $byhand->test; },
             'Direct - get' => sub { $foo = $direct->{test}; }
            }
@@ -57,6 +62,7 @@ cmpthese( -1,
            {
             'C::A - set' => sub { $ca->test(42); },
             'C::A::F - set' => sub { $fast->test(42); },
+            'C::A::Fr - set' => sub { $faster->test(42); },
             'By Hand - set' => sub { $byhand->test(42); },
             'Direct - set' => sub { $direct->{test} = 42; }
            }
