@@ -1,7 +1,7 @@
 package Class::Accessor::Fast;
 use base 'Class::Accessor';
 use strict;
-$Class::Accessor::Fast::VERSION = $Class::Accessor::VERSION;
+$Class::Accessor::Fast::VERSION = '0.30';
 
 =head1 NAME
 
