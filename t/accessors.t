@@ -1,6 +1,6 @@
 #!perl
 use strict;
-use Test::More tests => 37;
+use Test::More tests => 42;
 
 for my $class (qw(Class::Accessor Class::Accessor::Fast Class::Accessor::Faster)) {
     require_ok($class);
@@ -53,6 +53,14 @@ for my $class (qw(Class::Accessor Class::Accessor::Fast Class::Accessor::Faster)
     my $test2 = $silly->new;
     my @args = ($test2->foo, $test2->bar);
     is(@args, 2, 'accessor get in list context');
+
+    # test array setters
+    $test->foo(qw(1 2 3));
+    is_deeply($test->foo, [qw(1 2 3)], "set an array ref via foo accessor");
+
+    $test->sekret(qw(1 2 3));
+    is_deeply($test->{'sekret'}, [qw(1 2 3)], "array ref")
+        unless $class eq 'Class::Accessor::Faster';
 
     {
         my $eeek;

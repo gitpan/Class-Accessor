@@ -46,10 +46,27 @@ DESCRIPTION
 
     Done. My::Class now has simple foo(), bar() and car() accessors defined.
 
+BENCHMARKS
+
+    accessors:
+                 Rate   Basic Average    Fast  Faster  Direct
+    Basic    189150/s      --    -42%    -51%    -55%    -89%
+    Average  327679/s     73%      --    -16%    -22%    -82%
+    Fast     389212/s    106%     19%      --     -8%    -78%
+    Faster   421646/s    123%     29%      8%      --    -76%
+    Direct  1771243/s    836%    441%    355%    320%      --
+
+    mutators:
+                 Rate   Basic Average    Fast  Faster  Direct
+    Basic    173769/s      --    -34%    -53%    -59%    -90%
+    Average  263046/s     51%      --    -29%    -38%    -85%
+    Fast     371158/s    114%     41%      --    -13%    -78%
+    Faster   425821/s    145%     62%     15%      --    -75%
+    Direct  1699081/s    878%    546%    358%    299%      --
 
 AUTHORS
 
-    Copyright 2006 Marty Pauley <marty+perl@kasei.com>
+    Copyright 2007 Marty Pauley <marty+perl@kasei.com>
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself. That means either (a) the GNU

@@ -49,22 +49,25 @@ package main;
 use Benchmark 'cmpthese';
 use strict;
 
+print "accessors:\n";
 cmpthese( -1, 
            {
-            'C::A - get' => sub { $foo = $ca->test; },
-            'C::A::F - get' => sub { $foo = $fast->test; },
-            'C::A::Fr - get' => sub { $foo = $faster->test; },
-            'By Hand - get' => sub { $foo = $byhand->test; },
-            'Direct - get' => sub { $foo = $direct->{test}; }
+            'Basic' => sub { $foo = $ca->test; },
+            'Fast' => sub { $foo = $fast->test; },
+            'Faster' => sub { $foo = $faster->test; },
+            'Average' => sub { $foo = $byhand->test; },
+            'Direct' => sub { $foo = $direct->{test}; }
            }
          );
+
+print "mutators:\n";
 cmpthese( -1, 
            {
-            'C::A - set' => sub { $ca->test(42); },
-            'C::A::F - set' => sub { $fast->test(42); },
-            'C::A::Fr - set' => sub { $faster->test(42); },
-            'By Hand - set' => sub { $byhand->test(42); },
-            'Direct - set' => sub { $direct->{test} = 42; }
+            'Acc' => sub { $ca->test(42); },
+            'Fast' => sub { $fast->test(42); },
+            'Faster' => sub { $faster->test(42); },
+            'By hand' => sub { $byhand->test(42); },
+            'Direct' => sub { $direct->{test} = 42; }
            }
          );
 

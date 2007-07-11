@@ -1,7 +1,7 @@
 package Class::Accessor::Faster;
 use base 'Class::Accessor';
 use strict;
-$Class::Accessor::Faster::VERSION = '0.30';
+$Class::Accessor::Faster::VERSION = '0.31';
 
 =head1 NAME
 
@@ -55,9 +55,9 @@ sub make_accessor {
     my($class, $field) = @_;
     my $n = $class->_slot($field);
     return sub {
-        return $_[0]->[$n] unless @_ > 1;
-        my $self = shift;
-        $self->[$n] = (@_ == 1 ? $_[0] : [@_]);
+        return $_[0]->[$n] if @_ == 1;
+        return $_[0]->[$n] = $_[1] if @_ == 2;
+        return (shift)->[$n] = \@_;
     };
 }
 
@@ -66,10 +66,9 @@ sub make_ro_accessor {
     my($class, $field) = @_;
     my $n = $class->_slot($field);
     return sub {
-        return $_[0]->[$n] unless @_ > 1;
-        my $self = shift;
+        return $_[0]->[$n] if @_ == 1;
         my $caller = caller;
-        $self->_croak("'$caller' cannot alter the value of '$field' on objects of class '$class'");
+        $_[0]->_croak("'$caller' cannot alter the value of '$field' on objects of class '$class'");
     };
 }
 
@@ -78,14 +77,12 @@ sub make_wo_accessor {
     my($class, $field) = @_;
     my $n = $class->_slot($field);
     return sub {
-        my $self = shift;
-
-        unless (@_) {
+        if (@_ == 1) {
             my $caller = caller;
-            $self->_croak("'$caller' cannot access the value of '$field' on objects of class '$class'");
-        }
-        else {
-            return $self->[$n] = (@_ == 1 ? $_[0] : [@_]);
+            $_[0]->_croak("'$caller' cannot access the value of '$field' on objects of class '$class'");
+        } else {
+            return $_[0]->[$n] = $_[1] if @_ == 2;
+            return (shift)->[$n] = \@_;
         }
     };
 }
@@ -93,7 +90,7 @@ sub make_wo_accessor {
 
 =head1 AUTHORS
 
-Copyright 2006 Marty Pauley <marty+perl@kasei.com>
+Copyright 2007 Marty Pauley <marty+perl@kasei.com>
 
 This program is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  That means either (a) the GNU General Public

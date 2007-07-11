@@ -1,3 +1,6 @@
+0.31 Wed Jul 11 23:03:47 JST 2007
+    - applied performance patch from RUZ
+
 0.30 Sun Nov 26 13:03:47 JST 2006
     - added version numbers back into each class to fix RT#21746
 
