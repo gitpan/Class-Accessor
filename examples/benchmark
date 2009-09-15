@@ -10,50 +10,43 @@ sub new {
 package Bench::Direct;
 use base qw(Bench::Base);
 
-package Bench::Class::Accessor;
-use base qw(Class::Accessor);
-__PACKAGE__->mk_accessors(qw(test));
+package Bench::Normal;
+use Class::Accessor "moose-like";
+has test => (is => "rw");
 
+package Bench::Fast;
+use Class::Accessor::Fast "moose-like";
+has test => (is => "rw");
 
-package Bench::Class::Accessor::Fast;
-use base qw(Class::Accessor::Fast);
-__PACKAGE__->mk_accessors(qw(test));
+package Bench::Faster;
+use Class::Accessor::Faster "antlers";
+has test => (is => "rw");
 
-package Bench::Class::Accessor::Faster;
-use base qw(Class::Accessor::Faster);
-__PACKAGE__->mk_accessors(qw(test));
+package Bench::Moose;
+use Moose;
+has test => (is => "rw");
 
-my %init   = ( test => 23 );
-my $ca     = Bench::Class::Accessor->new(\%init);
-my $fast   = Bench::Class::Accessor::Fast->new(\%init);
-my $faster = Bench::Class::Accessor::Faster->new(\%init);
-my $direct = Bench::Direct->new;
-
-my $foo;
-my $control = 42;
-
+package Bench::Mouse;
+use Mouse;
+has test => (is => "rw");
 
 package main;
-use Benchmark 'cmpthese';
 use strict;
+use Benchmark 'cmpthese';
+
+my $tmp;
+my $direct = Bench::Direct->new({ test => 23 });
+my %accessor = ( Direct => sub { $tmp = $direct->{test}; } );
+my %mutator = ( Direct => sub { $direct->{test} = 42; } );
+for my $p (qw/Normal Fast Faster Moose Mouse/) {
+    my $o = "Bench::$p"->new({ test => 23 });
+    $accessor{$p} = sub { $tmp = $o->test; };
+    $mutator{$p}  = sub { $o->test(42); };
+}
 
 print "accessors:\n";
-cmpthese( -1, 
-           {
-            'Basic' => sub { $foo = $ca->test; },
-            'Fast' => sub { $foo = $fast->test; },
-            'Faster' => sub { $foo = $faster->test; },
-            'Direct' => sub { $foo = $direct->{test}; }
-           }
-         );
-
+cmpthese( -10, \%accessor );
+print "\n";
 print "mutators:\n";
-cmpthese( -1, 
-           {
-            'Acc' => sub { $ca->test(42); },
-            'Fast' => sub { $fast->test(42); },
-            'Faster' => sub { $faster->test(42); },
-            'Direct' => sub { $direct->{test} = 42; }
-           }
-         );
+cmpthese( -10, \%mutator );
 
